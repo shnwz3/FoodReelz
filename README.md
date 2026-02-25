@@ -1,6 +1,6 @@
 # Xoto Food Reels Application - MERN Stack Project
 
-Xoto is a next-generation "Food Reels" platform that transforms how people discover and order food. Instead of browsing static menus, users explore a vertical feed of engaging short videos posted by food partners, enabling instant orders directly from the reels.
+Xoto is a "Food Reels" platform that transforms how people discover and order food. Instead of browsing static menus, users explore a vertical feed of engaging short videos posted by food partners, enabling instant orders directly from the reels.
 
 ## 🌟 Key Features
 
