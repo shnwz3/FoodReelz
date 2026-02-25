@@ -69,5 +69,46 @@ cd zomato
 The application should now be running! Visit `http://localhost:5173` (or the port shown in your terminal) to view the frontend.
 
 ## 📂 Project Structure
-(See root directory for full details)
-...
+
+```text
+zomato/
+├── backend/            # Express.js API
+│   ├── src/
+│   │   ├── controllers/# Request handlers (Auth, Food)
+│   │   ├── db/         # MongoDB connection setup
+│   │   ├── middlewares/# Auth & validation middlewares
+│   │   ├── models/     # Mongoose Data Models (User, FoodPartner, Food)
+│   │   ├── routes/     # API Route definitions
+│   │   └── services/   # Internal services (e.g., Media Handling)
+│   └── .env.example    # Template for environment variables
+├── frontend/           # React + Vite Frontend
+│   └── src/
+│       ├── components/ # Shared UI components
+│       └── pages/      # Page components (Login, Register, Dashboard)
+├── videos/             # Sample media assets
+└── README.md           # Project documentation
+```
+
+## 🛠️ API Documentation
+
+### Authentication (Base URL: `/api/auth`)
+
+| Endpoint | Method | Description |
+| :--- | :--- | :--- |
+| `/register` | POST | Register a new customer |
+| `/login` | POST | Customer login (sets session cookie) |
+| `/logout` | POST | Customer logout |
+| `/food-partner/register` | POST | Register a new food partner |
+| `/food-partner/login` | POST | Food partner login |
+| `/food-partner/logout` | GET | Food partner logout |
+
+### Food Management (Base URL: `/api/food`)
+
+| Endpoint | Method | Auth Required | Description |
+| :--- | :--- | :--- | :--- |
+| `/` | GET | No | Fetch all listed food items |
+| `/` | POST | Yes (Partner) | Add new food (supports video upload) |
+
+## 📜 License
+
+This project is for educational purposes as a Zomato Clone demonstration.
