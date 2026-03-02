@@ -1,8 +1,38 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import './AuthPages.css';
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 const FoodPartnerRegister = () => {
+  const navigate=useNavigate()
+  const handlePartnerRegister=async(e)=>{
+    e.preventDefault()
+    const name=e.target.name.value
+    const email=e.target.email.value
+    const contactNumber=e.target.phone.value
+    const password=e.target.password.value
+    const address=e.target.address.value
+    await axios.post('http://localhost:3000/api/auth/food-partner/register',{
+      name,
+      email,
+      contactNumber,
+      password,
+      address
+    },
+    {withCredentials:true}
+  )
+    .then(response=>{
+      console.log(response.data)
+      navigate('/foodpartner/login')
+    })
+    .catch(error=>{
+      console.log(error)
+    })
+    
+
+  }
+
   return (
     <div className="auth-container">
       <div className="auth-card">
@@ -11,7 +41,7 @@ const FoodPartnerRegister = () => {
         <h2 className="auth-title">Partner with xoto</h2>
         <p className="auth-subtitle">Grow your business by reaching more customers.</p>
         
-        <form className="auth-form">
+        <form className="auth-form" onSubmit={handlePartnerRegister}>
           <div className="form-group">
             <label htmlFor="name">Business Name</label>
             <input type="text" id="name" placeholder="Enter your business name" required />

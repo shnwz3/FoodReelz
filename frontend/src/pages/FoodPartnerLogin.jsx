@@ -1,8 +1,31 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import './AuthPages.css';
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 const FoodPartnerLogin = () => {
+  const navigate=useNavigate()
+  const HandlePartnerLogin=async(e)=>{
+    e.preventDefault()
+    const email=e.target.email.value
+    const password=e.target.password.value
+    await axios.post('http://localhost:3000/api/auth/food-partner/login',{
+      email,
+      password
+    },
+    {withCredentials:true}
+  )
+    .then(response=>{
+      console.log(response.data)
+      navigate('/foodpartner/add-food')
+    })
+    .catch(error=>{
+      console.log(error)
+    })
+    
+
+  }
   return (
     <div className="auth-container">
       <div className="auth-card">
@@ -11,7 +34,7 @@ const FoodPartnerLogin = () => {
         <h2 className="auth-title">Partner Login</h2>
         <p className="auth-subtitle">Access your dashboard and manage orders.</p>
         
-        <form className="auth-form">
+        <form className="auth-form" onSubmit={HandlePartnerLogin}>
           <div className="form-group">
             <label htmlFor="email">Email</label>
             <input type="email" id="email" placeholder="Enter your business email" required />

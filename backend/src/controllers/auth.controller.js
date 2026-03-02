@@ -51,16 +51,16 @@ const logoutUser = async (req, res) => {
 }
 
 const registerFoodPartner = async (req, res) => {
-    const { name, email, password } = req.body;
+    const { name, email, password, contactNumber, address } = req.body;
     const alreadyexist = await foodPartnerModel.findOne({ email });
     if (alreadyexist) {
         return res.status(400).json({ message: "Food partner already exists" });
     }
     const hashPassword = await bcrypt.hash(password, 10);
-    const foodPartner = await foodPartnerModel.create({ name, email, password: hashPassword });
+    const foodPartner = await foodPartnerModel.create({ name, email, contactNumber, address, password: hashPassword });
     const token = jwt.sign({ id: foodPartner._id }, process.env.JWT_TOKEN, { expiresIn: "1h" });
     res.cookie("token", token);
-    res.status(201).json({ message: "Food partner registered successfully", foodPartner: { foodPartnerId: foodPartner._id, name: foodPartner.name, email: foodPartner.email } });
+    res.status(201).json({ message: "Food partner registered successfully", foodPartner: { foodPartnerId: foodPartner._id, name: foodPartner.name, email: foodPartner.email, contactNumber: foodPartner.contactNumber, address: foodPartner.address } });
 }
 
 const loginFoodPartner = async (req, res) => {

@@ -23,7 +23,7 @@ const createFood = async (req, res) => {
 
 const getAllFoods = async (req, res) => {
     try {
-        const foodItems = await foodModel.find();
+        const foodItems = await foodModel.find().populate('foodPartnerId', 'name');
         res.status(200).json({ message: "Food items fetched successfully", foodItems });
     }
     catch (error) {

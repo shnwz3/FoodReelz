@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import './Home.css';
+import './LandingPage.css';
 
-const Home = () => {
+const LandingPage = () => {
   const [openDropdown, setOpenDropdown] = useState(null);
   const loginRef = useRef(null);
   const registerRef = useRef(null);
@@ -65,4 +65,4 @@ const Home = () => {
   );
 };
 
-export default Home;
+export default LandingPage;
