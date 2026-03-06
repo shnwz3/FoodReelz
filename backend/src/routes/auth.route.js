@@ -6,7 +6,7 @@ const { registerUser, loginUser, logoutUser, registerFoodPartner, loginFoodPartn
 // user routes
 router.post("/register", registerUser);
 router.post("/login", loginUser);
-router.post("/logout", logoutUser);
+router.get("/logout", logoutUser);
 
 // food partner routes
 router.post("/food-partner/register", registerFoodPartner);

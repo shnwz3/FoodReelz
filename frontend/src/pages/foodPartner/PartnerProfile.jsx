@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { ArrowLeft, Plus, X, Upload, Video, CloudUpload } from 'lucide-react';
 import './PartnerProfile.css';
 
 /**
@@ -15,7 +16,7 @@ const PartnerHeader = ({ partner }) => {
     return (
         <header className="profile-header">
             <div className="profile-identity">
-                <div className="profile-badge">
+                <div className="partner-profile-badge">
                     {partner.name?.charAt(0).toUpperCase()}
                 </div>
                 <div className="partner-info">
@@ -88,6 +89,7 @@ const PartnerProfile = () => {
     const [isOwner, setIsOwner] = useState(false);
     const [showUploadModal, setShowUploadModal] = useState(false);
     const [uploading, setUploading] = useState(false);
+    const [previewUrl, setPreviewUrl] = useState(null);
 
     const fetchData = useCallback(async () => {
         setState(prev => ({ ...prev, loading: true }));
@@ -101,7 +103,7 @@ const PartnerProfile = () => {
                 error: null
             });
 
-            // Ownership check
+            // Ownership check (Only if logged in as a partner)
             const loggedInPartner = JSON.parse(localStorage.getItem('foodPartner'));
             if (loggedInPartner && loggedInPartner.foodPartnerId === id) {
                 setIsOwner(true);
@@ -120,7 +122,15 @@ const PartnerProfile = () => {
         fetchData();
     }, [fetchData]);
 
-    const handleGoBack = () => navigate('/home');
+    const handleGoBack = () => navigate('/');
+
+    const handleFileChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            const url = URL.createObjectURL(file);
+            setPreviewUrl(url);
+        }
+    };
 
     const handleUpload = async (e) => {
         e.preventDefault();
@@ -136,7 +146,10 @@ const PartnerProfile = () => {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
             setShowUploadModal(false);
-            fetchData(); // Refresh videos
+            setPreviewUrl(null);
+            
+            // Re-fetch to show new video immediately
+            fetchData();
         } catch (err) {
             alert('Upload failed: ' + (err.response?.data?.message || err.message));
         } finally {
@@ -144,7 +157,7 @@ const PartnerProfile = () => {
         }
     };
 
-    if (state.loading) {
+    if (state.loading && !state.partner) {
         return (
             <div className="status-container">
                 <div className="status-msg text-pulse">Loading profile...</div>
@@ -164,7 +177,7 @@ const PartnerProfile = () => {
     return (
         <div className="profile-page-wrapper">
             <button className="back-btn" onClick={handleGoBack}>
-                <span>←</span> Back to Feed
+                <ArrowLeft size={18} /> Back to Feed
             </button>
 
             <div className="profile-container">
@@ -181,7 +194,9 @@ const PartnerProfile = () => {
                         {isOwner && (
                             <div className="video-card add-reel-card" onClick={() => setShowUploadModal(true)}>
                                 <div className="add-reel-content">
-                                    <span className="add-icon">+</span>
+                                    <div className="add-icon-wrapper">
+                                        <Plus size={32} />
+                                    </div>
                                     <p>Add New Reel</p>
                                 </div>
                             </div>
@@ -200,22 +215,98 @@ const PartnerProfile = () => {
                 </main>
             </div>
 
-            {/* Upload Modal */}
+            {/* Upload Modal - Refactored for Senior UI */}
             {showUploadModal && (
                 <div className="upload-modal-overlay">
                     <div className="upload-modal-card">
-                        <h3>Create New Reel</h3>
+                        <div className="modal-header">
+                            <h3>Create New Reel</h3>
+                            <button className="close-modal-x" onClick={() => {
+                                setShowUploadModal(false);
+                                setPreviewUrl(null);
+                            }}>
+                                <X size={24} />
+                            </button>
+                        </div>
+                        
                         <form onSubmit={handleUpload} className="upload-form">
-                            <input name="name" placeholder="Food Name (e.g. Spicy Ramen)" required />
-                            <textarea name="caption" placeholder="Write a catchy caption..." required />
-                            <div className="file-input-wrapper">
-                                <label>Select Video</label>
-                                <input type="file" name="video" accept="video/*" required />
+                            <div className="upload-layout">
+                                <div className="upload-media-section">
+                                    {!previewUrl ? (
+                                        <div className="file-drop-area">
+                                            <input 
+                                                type="file" 
+                                                name="video" 
+                                                accept="video/*" 
+                                                required 
+                                                onChange={handleFileChange}
+                                                id="video-upload"
+                                            />
+                                            <label htmlFor="video-upload" className="drop-label">
+                                                <div className="upload-icon-pulse">
+                                                    <CloudUpload size={48} />
+                                                </div>
+                                                <p>Choose or Drop Video</p>
+                                                <span className="file-tip">MP4, WebM (max 50MB)</span>
+                                            </label>
+                                        </div>
+                                    ) : (
+                                        <div className="video-preview-container">
+                                            <video src={previewUrl} controls className="upload-preview" />
+                                            <button 
+                                                type="button" 
+                                                className="change-video-btn"
+                                                onClick={() => setPreviewUrl(null)}
+                                            >
+                                                Change Video
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
+
+                                <div className="upload-info-section">
+                                    <div className="input-group">
+                                        <label>Food Name</label>
+                                        <input 
+                                            name="name" 
+                                            placeholder="e.g. Signature Truffle Pasta" 
+                                            required 
+                                        />
+                                    </div>
+                                    
+                                    <div className="input-group">
+                                        <label>Description / Caption</label>
+                                        <textarea 
+                                            name="caption" 
+                                            placeholder="Tell your customers what's special..." 
+                                            required 
+                                        />
+                                    </div>
+                                </div>
                             </div>
+
                             <div className="modal-actions">
-                                <button type="button" onClick={() => setShowUploadModal(false)} className="cancel-btn">Cancel</button>
-                                <button type="submit" disabled={uploading} className="upload-submit-btn">
-                                    {uploading ? 'Uploading...' : 'Post Reel'}
+                                <button 
+                                    type="button" 
+                                    onClick={() => {
+                                        setShowUploadModal(false);
+                                        setPreviewUrl(null);
+                                    }} 
+                                    className="secondary-btn"
+                                >
+                                    Cancel
+                                </button>
+                                <button 
+                                    type="submit" 
+                                    disabled={uploading} 
+                                    className={`primary-submit-btn ${uploading ? 'uploading' : ''}`}
+                                >
+                                    {uploading ? (
+                                        <span className="btn-content">
+                                            <span className="spinner"></span>
+                                            Posting...
+                                        </span>
+                                    ) : 'Post Reel'}
                                 </button>
                             </div>
                         </form>

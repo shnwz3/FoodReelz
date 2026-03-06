@@ -9,6 +9,11 @@ const authFoodPartnerMiddleware = async (req, res, next) => {
     }
     try {
         const decodedToken = jwt.verify(token, process.env.JWT_TOKEN);
+
+        if (decodedToken.role !== 'partner') {
+            return res.status(403).json({ message: "Access denied. Partners only." });
+        }
+
         const foodpartner = await foodPartnerModel.findById(decodedToken.id);
         if (!foodpartner) {
             return res.status(404).json({ message: "Food partner not found" });
@@ -28,6 +33,11 @@ const authUserMiddleware = async (req, res, next) => {
     }
     try {
         const decodedToken = jwt.verify(token, process.env.JWT_TOKEN);
+
+        if (decodedToken.role !== 'user') {
+            return res.status(403).json({ message: "Access denied. Users only." });
+        }
+
         const user = await userModel.findById(decodedToken.id);
         if (!user) {
             return res.status(404).json({ message: "User not found" });
