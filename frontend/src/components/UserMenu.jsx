@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { LogOut, User, ChevronDown } from 'lucide-react';
-import axios from 'axios';
+import { ChevronDown, LogOut } from 'lucide-react';
+import api from '../api/axios';
 import { useNavigate } from 'react-router-dom';
 import './UserMenu.css';
 
@@ -35,10 +35,10 @@ const UserMenu = () => {
     const handleLogout = async () => {
         try {
             const logoutUrl = partner
-                ? 'http://localhost:3000/api/auth/food-partner/logout'
-                : 'http://localhost:3000/api/auth/logout';
+                ? '/auth/food-partner/logout'
+                : '/auth/logout';
             
-            await axios.get(logoutUrl, { withCredentials: true });
+            await api.get(logoutUrl);
         } catch (error) {
             console.error('[UserMenu] Logout failed:', error);
         } finally {

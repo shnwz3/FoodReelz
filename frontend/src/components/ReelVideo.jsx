@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import './ReelVideo.css';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../api/axios';
 import { Heart, Bookmark, Share2, MoreVertical, MessageCircle } from 'lucide-react';
 import SocialUsersModal from './SocialUsersModal';
 
@@ -25,8 +25,8 @@ const ReelVideo = ({ id, videoUrl, title, userName, partnerId, caption, isLiked:
   const fetchSocialUsers = async (type) => {
     setSocialModal({ isOpen: true, title: type === 'likes' ? 'Liked by' : 'Saved by', type, users: [], loading: true });
     try {
-      const endpoint = type === 'likes' ? `http://localhost:3000/api/food/${id}/likes` : `http://localhost:3000/api/food/${id}/saves`;
-      const response = await axios.get(endpoint);
+      const endpoint = type === 'likes' ? `/food/${id}/likes` : `/food/${id}/saves`;
+      const response = await api.get(endpoint);
       setSocialModal(prev => ({ ...prev, users: response.data.users, loading: false }));
     } catch (err) {
       console.error("Failed to fetch social users", err);
@@ -62,7 +62,7 @@ const ReelVideo = ({ id, videoUrl, title, userName, partnerId, caption, isLiked:
     setLikesCount(prev => newLikedState ? prev + 1 : prev - 1);
 
     try {
-      const response = await axios.post('http://localhost:3000/api/food/like', { food: id }, { withCredentials: true });
+      const response = await api.post('/food/like', { food: id });
       setLikesCount(response.data.likesCount);
       setIsLiked(response.data.isLiked);
     } catch (err) {
@@ -81,7 +81,7 @@ const ReelVideo = ({ id, videoUrl, title, userName, partnerId, caption, isLiked:
     setSavesCount(prev => newSavedState ? prev + 1 : prev - 1);
 
     try {
-      const response = await axios.post('http://localhost:3000/api/food/save', { food: id }, { withCredentials: true });
+      const response = await api.post('/food/save', { food: id });
       setSavesCount(response.data.savesCount);
       setIsSaved(response.data.isSaved);
     } catch (err) {

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import axios from 'axios';
 import { ArrowLeft, Loader2, Eye, EyeOff } from 'lucide-react';
+import api from '../api/axios';
 import './AuthPages.css';
 
 const UserLogin = () => {
@@ -19,9 +19,8 @@ const UserLogin = () => {
     const password = e.target.password.value;
 
     try {
-      const response = await axios.post('http://localhost:3000/api/auth/login', 
-        { email, password },
-        { withCredentials: true }
+      const response = await api.post('/auth/login', 
+        { email, password }
       );
       
       localStorage.setItem('user', JSON.stringify(response.data.user));

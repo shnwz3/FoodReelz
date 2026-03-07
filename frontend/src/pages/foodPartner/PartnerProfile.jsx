@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import axios from 'axios';
-import { ArrowLeft, Plus, LogOut } from 'lucide-react';
+import api from '../../api/axios'; // Centralized axios instance
+import { ArrowLeft, Plus, LogOut, Loader2, UploadCloud, X } from 'lucide-react'; // Merged lucide-react imports
 
 // Modular Components
 import PartnerHeader from './components/PartnerHeader';
@@ -40,7 +40,7 @@ const PartnerProfile = () => {
     const fetchData = useCallback(async () => {
         setState(prev => ({ ...prev, loading: true }));
         try {
-            const response = await axios.get(`http://localhost:3000/api/auth/food-partner/${id}`, { withCredentials: true });
+            const response = await api.get(`/auth/food-partner/${id}`);
             
             setState({
                 partner: response.data.foodPartner,
@@ -72,7 +72,7 @@ const PartnerProfile = () => {
 
     const handlePartnerLogout = async () => {
         try {
-            await axios.get('http://localhost:3000/api/auth/food-partner/logout', { withCredentials: true });
+            await api.get('/auth/food-partner/logout');
             localStorage.removeItem('foodPartner');
             navigate('/');
         } catch (err) {
@@ -113,8 +113,7 @@ const PartnerProfile = () => {
 
         try {
             console.log('[PartnerProfile] Sending POST to /api/food...');
-            const response = await axios.post('http://localhost:3000/api/food', formData, {
-                withCredentials: true,
+            const response = await api.post('/food', formData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
             console.log('[PartnerProfile] Upload Success:', response.data);

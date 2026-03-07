@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import ReelVideo from '../../components/ReelVideo';
 import '../../components/ReelVideo.css';
-import axios from 'axios';
+import api from '../../api/axios';
 import { useNavigate } from 'react-router-dom';
 import UserMenu from '../../components/UserMenu';
 
@@ -27,7 +27,7 @@ const Home = () => {
 
     useEffect(() => {
         setLoading(true);
-        axios.get('http://localhost:3000/api/food', { withCredentials: true })
+        api.get('/food')
             .then(response => {
                 setVideos(response.data.foodItems || []);
             })

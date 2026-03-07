@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import axios from 'axios';
 import { ArrowLeft, Loader2, Eye, EyeOff } from 'lucide-react';
+import api from '../api/axios';
 import './AuthPages.css';
 
 const FoodPartnerLogin = () => {
@@ -19,10 +19,10 @@ const FoodPartnerLogin = () => {
     const password = e.target.password.value;
 
     try {
-      const response = await axios.post('http://localhost:3000/api/auth/food-partner/login', {
+      const response = await api.post('/auth/food-partner/login', {
         email,
         password
-      }, { withCredentials: true });
+      });
       
       console.log('[FoodPartnerLogin] Success:', response.data);
       const partner = response.data.foodPartner;
