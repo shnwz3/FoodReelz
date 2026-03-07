@@ -4,12 +4,14 @@ const cookieParser = require("cookie-parser");
 const cors = require("cors");
 
 //cors
-let allowedOrigin = process.env.FRONTEND_URL || "http://localhost:5173";
-if (allowedOrigin.endsWith('/')) {
-    allowedOrigin = allowedOrigin.slice(0, -1);
-}
+//cors
+let rawOrigin = process.env.FRONTEND_URL || "http://localhost:5173";
+// Robust sanitization: remove all trailing slashes and trim whitespace
+let allowedOrigin = rawOrigin.replace(/\/+$/, "").trim();
 
-console.log("CORS allowed origin (sanitized):", allowedOrigin);
+console.log("CORS Check:");
+console.log("- Raw Env Var (FRONTEND_URL):", `'${rawOrigin}'`);
+console.log("- Sanitized Allowed Origin:", `'${allowedOrigin}'`);
 
 app.use(cors(
     {
