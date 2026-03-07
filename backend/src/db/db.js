@@ -1,13 +1,22 @@
 const mongoose = require("mongoose");
 
 const connectDB = async () => {
+    const uri = process.env.MONGODB_CONNECT_URI;
+    if (!uri) {
+        console.error("MONGODB_CONNECT_URI is not defined in environment variables");
+        process.exit(1);
+    }
+
     try {
-        await mongoose.connect(`${process.env.MONGODB_CONNECT_URI}/foodView`);
-        console.log("MongoDB connected");
+        // We use the URI directly. 
+        // TIP: Ensure your URI on Render includes the database name (e.g. ...mongodb.net/foodView?...)
+        await mongoose.connect(uri);
+        console.log("MongoDB connected successfully");
     }
     catch (error) {
         console.error("MongoDB connection error:", error.message);
-        process.exit(1); // Exit process on failed DB connection
+        // On Render, we want the process to exit so it can restart properly
+        process.exit(1);
     }
 }
 
