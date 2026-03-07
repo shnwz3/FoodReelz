@@ -4,11 +4,17 @@ const cookieParser = require("cookie-parser");
 const cors = require("cors");
 
 //cors
-console.log("CORS allowed origin:", process.env.FRONTEND_URL || "http://localhost:5173");
+let allowedOrigin = process.env.FRONTEND_URL || "http://localhost:5173";
+if (allowedOrigin.endsWith('/')) {
+    allowedOrigin = allowedOrigin.slice(0, -1);
+}
+
+console.log("CORS allowed origin (sanitized):", allowedOrigin);
+
 app.use(cors(
     {
         credentials: true,
-        origin: process.env.FRONTEND_URL || "http://localhost:5173"
+        origin: allowedOrigin
     }
 ));
 
