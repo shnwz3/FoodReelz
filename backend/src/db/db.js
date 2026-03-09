@@ -14,7 +14,14 @@ const connectDB = async () => {
         console.log("MongoDB connected successfully");
     }
     catch (error) {
-        console.error("MongoDB connection error:", error.message);
+        if (error.message.includes("ECONNREFUSED") || error.message.includes("querySrv")) {
+            console.error("CRITICAL: MongoDB Connection Refused.");
+            console.error("TIP: Ensure your current IP is whitelisted in MongoDB Atlas (Network Access).");
+            console.error("Check your MONGODB_CONNECT_URI in .env.");
+        } else {
+            console.error("MongoDB connection error:", error.message);
+        }
+
         // On Render, we want the process to exit so it can restart properly
         process.exit(1);
     }

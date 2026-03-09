@@ -2,8 +2,11 @@ const express = require("express");
 const app = express();
 const cookieParser = require("cookie-parser");
 const cors = require("cors");
+const helmet = require("helmet");
+const compression = require("compression");
+const morgan = require("morgan");
+const { rateLimit } = require("express-rate-limit");
 
-//cors
 //cors
 let rawOrigin = process.env.FRONTEND_URL || "http://localhost:5173";
 // Robust sanitization: remove all trailing slashes and trim whitespace
@@ -13,6 +16,10 @@ console.log("CORS Check:");
 console.log("- Raw Env Var (FRONTEND_URL):", `'${rawOrigin}'`);
 console.log("- Sanitized Allowed Origin:", `'${allowedOrigin}'`);
 
+// Core Middlewares
+app.use(helmet()); // Security headers
+app.use(compression()); // Response compression
+app.use(morgan("dev")); // Request logging
 app.use(cors(
     {
         credentials: true,
@@ -20,13 +27,24 @@ app.use(cors(
     }
 ));
 
+// Rate Limiting
+const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    limit: 100, // Limit each IP to 100 requests per windowMs
+    standardHeaders: 'draft-7',
+    legacyHeaders: false,
+    message: { message: "Too many requests from this IP, please try again after 15 minutes" }
+});
+app.use("/api/", limiter);
+
 // Health check route
 app.get("/", (req, res) => {
     res.status(200).json({
         message: "FoodReelz Backend is live and running!",
-        cors: {
-            raw: process.env.FRONTEND_URL || "not set",
-            sanitized: allowedOrigin
+        system: {
+            security: "helmet-enabled",
+            compression: "gzip-enabled",
+            cors_origin: allowedOrigin
         }
     });
 });

@@ -24,24 +24,27 @@ const Home = () => {
     const [videos, setVideos] = useState([]);
     const [loading, setLoading] = useState(true);
     const [loadingMore, setLoadingMore] = useState(false);
-    const [page, setPage] = useState(1);
+    const [nextCursor, setNextCursor] = useState(null);
     const [hasMore, setHasMore] = useState(true);
     const navigate = useNavigate();
-    const sentinelRef = useRef(null);
+    const observerRef = useRef(null);
 
-    const fetchVideos = (pageNum) => {
-        const isInitial = pageNum === 1;
+    const fetchVideos = (cursor = null) => {
+        const isInitial = !cursor;
         if (isInitial) setLoading(true);
         else setLoadingMore(true);
 
-        const limit = 5;
-        cachedGet(`/food?page=${pageNum}&limit=${limit}`)
+        const limit = 6;
+        const url = `/food?limit=${limit}${cursor ? `&cursor=${cursor}` : ''}`;
+        
+        cachedGet(url)
             .then(response => {
                 const newVideos = response.data.foodItems || [];
-                const pagination = response.data.pagination;
+                const nextC = response.data.nextCursor;
 
                 setVideos(prev => isInitial ? newVideos : [...prev, ...newVideos]);
-                setHasMore(pagination?.hasMore || false);
+                setNextCursor(nextC);
+                setHasMore(response.data.hasMore || false);
             })
             .catch(error => {
                 console.error('Error fetching videos:', error);
@@ -53,26 +56,22 @@ const Home = () => {
     };
 
     useEffect(() => {
-        fetchVideos(1);
+        fetchVideos();
     }, []);
 
-    useEffect(() => {
-        if (loading || !hasMore || loadingMore) return;
+    // Senior Refinement: Infinite scroll with prefetching
+    const lastVideoElementRef = (node) => {
+        if (loading || loadingMore || !hasMore) return;
+        if (observerRef.current) observerRef.current.disconnect();
 
-        const observer = new IntersectionObserver((entries) => {
-            if (entries[0].isIntersecting) {
-                const nextWeight = page + 1;
-                setPage(nextWeight);
-                fetchVideos(nextWeight);
+        observerRef.current = new IntersectionObserver(entries => {
+            if (entries[0].isIntersecting && hasMore) {
+                fetchVideos(nextCursor);
             }
         }, { threshold: 0.1 });
 
-        if (sentinelRef.current) {
-            observer.observe(sentinelRef.current);
-        }
-
-        return () => observer.disconnect();
-    }, [loading, hasMore, loadingMore, page]);
+        if (node) observerRef.current.observe(node);
+    };
 
     return (
         <div className="reels-wrapper">
@@ -89,25 +88,32 @@ const Home = () => {
                     [...Array(3)].map((_, i) => <ReelSkeleton key={i} />)
                 ) : videos.length > 0 ? (
                     <>
-                        {videos.map((fooditem, index) => (
-                            <ReelVideo 
-                                key={`${fooditem._id}-${index}`}
-                                id={fooditem._id}
-                                videoUrl={fooditem.video} 
-                                title={fooditem.name} 
-                                userName={fooditem.foodPartnerId?.name || "anonymous"}
-                                partnerId={fooditem.foodPartnerId?._id}
-                                caption={fooditem.caption}
-                                isLiked={fooditem.isLiked}
-                                isSaved={fooditem.isSaved}
-                                likesCount={fooditem.likesCount}
-                                savesCount={fooditem.savesCount}
-                            />
-                        ))}
+                        {videos.map((fooditem, index) => {
+                            // Prefetch when user reaches the 4th item from the bottom
+                            const isPrefetchTrigger = index === videos.length - 4;
+                            const isLastItem = index === videos.length - 1;
+                            
+                            return (
+                                <ReelVideo 
+                                    ref={isPrefetchTrigger || (isLastItem && videos.length < 4) ? lastVideoElementRef : null}
+                                    key={`${fooditem._id}-${index}`}
+                                    id={fooditem._id}
+                                    videoUrl={fooditem.video} 
+                                    title={fooditem.name} 
+                                    userName={fooditem.foodPartnerId?.name || "anonymous"}
+                                    partnerId={fooditem.foodPartnerId?._id}
+                                    caption={fooditem.caption}
+                                    isLiked={fooditem.isLiked}
+                                    isSaved={fooditem.isSaved}
+                                    likesCount={fooditem.likesCount}
+                                    savesCount={fooditem.savesCount}
+                                />
+                            );
+                        })}
                         
-                        {hasMore && (
-                            <div className="infinite-scroll-sentinel" ref={sentinelRef}>
-                                {loadingMore && <div className="loading-more-spinner"></div>}
+                        {loadingMore && (
+                            <div className="infinite-scroll-sentinel">
+                                <div className="loading-more-spinner"></div>
                             </div>
                         )}
                     </>
