@@ -27,15 +27,26 @@ const createFood = async (req, res) => {
 const getAllFoods = async (req, res) => {
     try {
         const user = req.user; // User might be undefined if not logged in
-        const foodItems = await foodModel.find().populate('foodPartnerId', 'name').sort({ createdAt: -1 });
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        const skip = (page - 1) * limit;
+
+        const [foodItems, total] = await Promise.all([
+            foodModel.find()
+                .populate('foodPartnerId', 'name')
+                .sort({ createdAt: -1 })
+                .skip(skip)
+                .limit(limit),
+            foodModel.countDocuments()
+        ]);
 
         // Senior Refinement: Add personalized metadata (isLiked, isSaved)
         let enrichedFoods = foodItems.map(item => item.toObject());
 
         if (user) {
             const [userLikes, userSaves] = await Promise.all([
-                likesModel.find({ user: user._id }).select('food'),
-                saveModel.find({ user: user._id }).select('food')
+                likesModel.find({ user: user._id, food: { $in: foodItems.map(f => f._id) } }).select('food'),
+                saveModel.find({ user: user._id, food: { $in: foodItems.map(f => f._id) } }).select('food')
             ]);
 
             const likedFoodIds = new Set(userLikes.map(l => l.food.toString()));
@@ -48,7 +59,16 @@ const getAllFoods = async (req, res) => {
             }));
         }
 
-        res.status(200).json({ message: "Food items fetched successfully", foodItems: enrichedFoods });
+        res.status(200).json({
+            message: "Food items fetched successfully",
+            foodItems: enrichedFoods,
+            pagination: {
+                total,
+                page,
+                limit,
+                hasMore: skip + foodItems.length < total
+            }
+        });
     }
     catch (error) {
         res.status(500).json({ message: error.message });

@@ -513,3 +513,33 @@
     background: rgba(255, 255, 255, 0.08);
     border-radius: 50%;
 }
+
+/* --- Pagination & Infinite Scroll --- */
+.infinite-scroll-sentinel {
+    height: 100px;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #000;
+    scroll-snap-align: start;
+}
+
+.loading-more-spinner {
+    width: 32px;
+    height: 32px;
+    border: 3px solid rgba(255, 255, 255, 0.1);
+    border-top: 3px solid var(--zomato-red);
+    border-radius: 50%;
+    animation: spinnerRotate 0.8s linear infinite;
+}
+
+@keyframes spinnerRotate {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}

@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../../api/axios'; // Centralized axios instance
+import { cachedGet, invalidateCache } from '../../api/apiCache';
 import { ArrowLeft, Plus, LogOut, Loader2, UploadCloud, X } from 'lucide-react'; // Merged lucide-react imports
 
 // Modular Components
@@ -40,7 +41,7 @@ const PartnerProfile = () => {
     const fetchData = useCallback(async () => {
         setState(prev => ({ ...prev, loading: true }));
         try {
-            const response = await api.get(`/auth/food-partner/${id}`);
+            const response = await cachedGet(`/auth/food-partner/${id}`);
             
             setState({
                 partner: response.data.foodPartner,
@@ -117,6 +118,10 @@ const PartnerProfile = () => {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
             console.log('[PartnerProfile] Upload Success:', response.data);
+            
+            // Invalidate caches so fresh data is fetched
+            invalidateCache(`/auth/food-partner/${id}`);
+            invalidateCache('/food');
             
             setShowUploadModal(false);
             setPreviewUrl(null);

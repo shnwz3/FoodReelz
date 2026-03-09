@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState, useCallback, useMemo } from 'react'
 import './ReelVideo.css';
 import { useNavigate } from 'react-router-dom';
 import api from '../api/axios';
+import { cachedGet, invalidateCache } from '../api/apiCache';
 import { Heart, Bookmark, Share2, MoreVertical, MessageCircle } from 'lucide-react';
 import SocialUsersModal from './SocialUsersModal';
 
@@ -26,7 +27,7 @@ const ReelVideo = ({ id, videoUrl, title, userName, partnerId, caption, isLiked:
     setSocialModal({ isOpen: true, title: type === 'likes' ? 'Liked by' : 'Saved by', type, users: [], loading: true });
     try {
       const endpoint = type === 'likes' ? `/food/${id}/likes` : `/food/${id}/saves`;
-      const response = await api.get(endpoint);
+      const response = await cachedGet(endpoint, { ttl: 30000 });
       setSocialModal(prev => ({ ...prev, users: response.data.users, loading: false }));
     } catch (err) {
       console.error("Failed to fetch social users", err);
@@ -65,6 +66,8 @@ const ReelVideo = ({ id, videoUrl, title, userName, partnerId, caption, isLiked:
       const response = await api.post('/food/like', { food: id });
       setLikesCount(response.data.likesCount);
       setIsLiked(response.data.isLiked);
+      // Bust social user cache for this reel
+      invalidateCache(`/food/${id}/`);
     } catch (err) {
       setIsLiked(!newLikedState);
       setLikesCount(prev => !newLikedState ? prev + 1 : prev - 1);
@@ -84,6 +87,8 @@ const ReelVideo = ({ id, videoUrl, title, userName, partnerId, caption, isLiked:
       const response = await api.post('/food/save', { food: id });
       setSavesCount(response.data.savesCount);
       setIsSaved(response.data.isSaved);
+      // Bust social user cache for this reel
+      invalidateCache(`/food/${id}/`);
     } catch (err) {
       setIsSaved(!newSavedState);
       setSavesCount(prev => !newSavedState ? prev + 1 : prev - 1);
