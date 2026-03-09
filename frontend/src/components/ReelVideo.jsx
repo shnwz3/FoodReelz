@@ -23,6 +23,7 @@ const ReelVideo = ({ id, videoUrl, title, userName, partnerId, caption, isLiked:
 
   // --- Handlers ---
 
+
   const fetchSocialUsers = async (type) => {
     setSocialModal({ isOpen: true, title: type === 'likes' ? 'Liked by' : 'Saved by', type, users: [], loading: true });
     try {
@@ -38,10 +39,10 @@ const ReelVideo = ({ id, videoUrl, title, userName, partnerId, caption, isLiked:
   const handleTimeUpdate = useCallback(() => {
     const video = videoRef.current;
     if (video && video.duration) {
-      const currentProgress = (video.currentTime / video.duration) * 100;
-      setProgress(currentProgress);
+      setProgress((video.currentTime / video.duration) * 100);
     }
   }, []);
+
 
   const togglePlay = useCallback(() => {
     const video = videoRef.current;
@@ -161,21 +162,24 @@ const ReelVideo = ({ id, videoUrl, title, userName, partnerId, caption, isLiked:
     if (!title) return null;
     return (
       <div className="video-info-stack">
-        <button className="video-username-badge" 
-                aria-label="View user profile" 
-                onClick={(e) => {
-                  e.stopPropagation();
-                  navigate(`/foodpartner/${partnerId}`);
-                }}>
-          @{userName || 'partner'}
-        </button>
         <div className="video-text-container">
           <h2 className="video-title">{title}</h2>
           {caption && <p className="video-caption">{caption}</p>}
         </div>
+        
+        <div className="video-meta-row">
+          <button className="video-username-badge" 
+                  aria-label="View user profile" 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigate(`/foodpartner/${partnerId}`);
+                  }}>
+            @{userName || 'partner'}
+          </button>
+        </div>
       </div>
     );
-  }, [title, userName, partnerId, navigate, caption]);
+  }, [title, userName, partnerId, navigate, caption, progress]);
 
   const SideActions = useMemo(() => (
     <div className="side-actions-container">

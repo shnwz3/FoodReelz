@@ -24,12 +24,26 @@
 }
 
 .logo {
-    font-size: clamp(24px, 4vw, 32px);
-    font-weight: 800;
-    color: #1c1c1c;
+    position: relative;
+    height: 60px;
+    width: 220px;
+    display: flex;
+    align-items: center;
     text-decoration: none;
-    letter-spacing: -1.5px;
     transition: transform 0.2s ease;
+}
+
+.logo-img {
+    height: clamp(140px, 18vw, 200px);
+    width: auto;
+    object-fit: contain;
+    position: absolute;
+    top: 70%;
+    /* Precise vertical offset */
+    left: 0;
+    transform: translateY(-50%);
+    pointer-events: none;
+    filter: drop-shadow(0 4px 15px rgba(0, 0, 0, 0.1));
 }
 
 .logo:hover {

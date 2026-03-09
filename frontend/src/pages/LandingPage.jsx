@@ -32,7 +32,9 @@ const LandingPage = () => {
   return (
     <div className="home-container">
       <header className="main-header">
-        <Link to="/" className="logo">FoodReelz</Link>
+        <Link to="/" className="logo">
+          <img src="/foodreelz.png" alt="FoodReelz" className="logo-img" />
+        </Link>
         
         <nav className="nav-links">
           <div className="dropdown" ref={loginRef}>

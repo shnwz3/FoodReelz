@@ -43,9 +43,6 @@ const FoodPartnerLogin = () => {
           <ArrowLeft size={16} /> Back to Home
         </Link>
         
-        <div className="auth-logo">
-          FoodReelz <small>for partners</small>
-        </div>
         
         <h2 className="auth-title">Welcome back, Partner.</h2>
         <p className="auth-subtitle">Manage your business and connect with hungry customers.</p>

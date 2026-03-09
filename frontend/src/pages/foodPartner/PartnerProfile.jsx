@@ -154,7 +154,7 @@ const PartnerProfile = () => {
                 <div className="profile-user-nav">
                     {localStorage.getItem('foodPartner') && (
                         <div className="logo" onClick={() => navigate('/')} style={{ cursor: 'pointer' }}>
-                            <span>FoodReelz</span>
+                            <img src="/foodreelz.png" alt="FoodReelz" className="logo-img" />
                         </div>
                     )}
 

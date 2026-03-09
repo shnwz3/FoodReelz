@@ -41,9 +41,8 @@ const UserLogin = () => {
           <ArrowLeft size={16} /> Back to Home
         </Link>
         
-        <div className="auth-logo">FoodReelz</div>
         
-        <h2 className="auth-title">Sign in to FoodReelz.</h2>
+        <h2 className="auth-title">Sign in to <img src="/text logo.png" alt="FoodReelz" className="inline-logo" /></h2>
         <p className="auth-subtitle">Enter your details below to access your account.</p>
         
         {error && (
@@ -101,7 +100,7 @@ const UserLogin = () => {
         </form>
         
         <div className="auth-footer">
-          New to FoodReelz? <Link to="/user/register" className="auth-link">Create an account</Link>
+          New to <img src="/text logo.png" alt="FoodReelz" className="inline-logo" />? <Link to="/user/register" className="auth-link">Create an account</Link>
         </div>
       </div>
     </div>

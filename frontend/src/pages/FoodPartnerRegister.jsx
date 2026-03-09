@@ -49,11 +49,8 @@ const FoodPartnerRegister = () => {
           <ArrowLeft size={16} /> Back to Home
         </Link>
         
-        <div className="auth-logo">
-          FoodReelz <small>for partners</small>
-        </div>
         
-        <h2 className="auth-title">Grow with FoodReelz.</h2>
+        <h2 className="auth-title">Grow with <img src="/text logo.png" alt="FoodReelz" className="inline-logo" /></h2>
         <p className="auth-subtitle">Reach thousands of local food lovers by showcasing your best dishes.</p>
         
         {error && (

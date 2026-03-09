@@ -76,8 +76,8 @@ const Home = () => {
     return (
         <div className="reels-wrapper">
             <header className="reels-header">
-                <div className="logo">
-                    <span>FoodReelz</span>
+                <div className="logo" onClick={() => navigate('/')}>
+                    <img src="/foodreelz.png" alt="FoodReelz" className="logo-img" />
                 </div>
                 
                 <UserMenu />

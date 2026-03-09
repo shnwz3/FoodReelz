@@ -42,9 +42,8 @@ const UserRegister = () => {
           <ArrowLeft size={16} /> Back to Home
         </Link>
         
-        <div className="auth-logo">FoodReelz</div>
         
-        <h2 className="auth-title">Join FoodReelz today.</h2>
+        <h2 className="auth-title">Join <img src="/text logo.png" alt="FoodReelz" className="inline-logo" /> today.</h2>
         <p className="auth-subtitle">Discover the best food experiences through short-form reels.</p>
         
         {error && (
