@@ -17,7 +17,11 @@ const registerUser = async (req, res) => {
         const user = await userModel.create({ name, email, password: hashPassword });
         const token = jwt.sign({ id: user._id, role: 'user' }, process.env.JWT_TOKEN, { expiresIn: "1h" });
         res.cookie("token", token, { httpOnly: true, sameSite: "none", secure: true });
-        res.status(201).json({ message: "User registered successfully", user: { userId: user._id, name: user.name, email: user.email } });
+        res.status(201).json({
+            message: "User registered successfully",
+            user: { userId: user._id, name: user.name, email: user.email },
+            token // Fallback for cross-site auth
+        });
     }
     catch (error) {
         res.status(500).json({ error: error.message });
@@ -37,7 +41,11 @@ const loginUser = async (req, res) => {
         }
         const token = jwt.sign({ id: user._id, role: 'user' }, process.env.JWT_TOKEN, { expiresIn: "1h" });
         res.cookie("token", token, { httpOnly: true, sameSite: "none", secure: true });
-        res.status(200).json({ message: "User logged in successfully", user: { userId: user._id, name: user.name, email: user.email } });
+        res.status(200).json({
+            message: "User logged in successfully",
+            user: { userId: user._id, name: user.name, email: user.email },
+            token // Fallback for cross-site auth
+        });
     }
     catch (error) {
         res.status(500).json({ error: error.message });
@@ -63,7 +71,11 @@ const registerFoodPartner = async (req, res) => {
     const foodPartner = await foodPartnerModel.create({ name, email, contactNumber, address, password: hashPassword });
     const token = jwt.sign({ id: foodPartner._id, role: 'partner' }, process.env.JWT_TOKEN, { expiresIn: "1h" });
     res.cookie("token", token, { httpOnly: true, sameSite: "none", secure: true });
-    res.status(201).json({ message: "Food partner registered successfully", foodPartner: { foodPartnerId: foodPartner._id, name: foodPartner.name, email: foodPartner.email, contactNumber: foodPartner.contactNumber, address: foodPartner.address } });
+    res.status(201).json({
+        message: "Food partner registered successfully",
+        foodPartner: { foodPartnerId: foodPartner._id, name: foodPartner.name, email: foodPartner.email, contactNumber: foodPartner.contactNumber, address: foodPartner.address },
+        token // Fallback for cross-site auth
+    });
 }
 
 const loginFoodPartner = async (req, res) => {
@@ -79,7 +91,11 @@ const loginFoodPartner = async (req, res) => {
         }
         const token = jwt.sign({ id: foodPartner._id, role: 'partner' }, process.env.JWT_TOKEN, { expiresIn: "1h" });
         res.cookie("token", token, { httpOnly: true, sameSite: "none", secure: true });
-        res.status(200).json({ message: "Food partner logged in successfully", foodPartner: { foodPartnerId: foodPartner._id, name: foodPartner.name, email: foodPartner.email } });
+        res.status(200).json({
+            message: "Food partner logged in successfully",
+            foodPartner: { foodPartnerId: foodPartner._id, name: foodPartner.name, email: foodPartner.email },
+            token // Fallback for cross-site auth
+        });
     }
     catch (error) {
         res.status(500).json({ error: error.message });

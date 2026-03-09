@@ -25,7 +25,9 @@ const UserRegister = () => {
       );
       
       console.log('[UserRegister] Success:', response.data);
-      localStorage.setItem('user', JSON.stringify(response.data));
+      const { user, token } = response.data;
+      localStorage.setItem('user', JSON.stringify(user));
+      localStorage.setItem('token', token);
       navigate('/user/login');
     } catch (err) {
       console.error('[UserRegister] Error:', err);

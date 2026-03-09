@@ -8,7 +8,10 @@ const api = axios.create({
 // Request Interceptor: Logging & Metadata
 api.interceptors.request.use(
     (config) => {
-        // Senior Refinement: Can add dynamic headers here if needed
+        const token = localStorage.getItem('token');
+        if (token) {
+            config.headers.Authorization = `Bearer ${token}`;
+        }
         return config;
     },
     (error) => Promise.reject(error)
@@ -21,9 +24,12 @@ api.interceptors.response.use(
         const status = error.response ? error.response.status : null;
 
         if (status === 401) {
-            // Unauthorized — Clear localized session if necessary and redirect
-            console.warn("Unauthorized request — redirecting to login...");
-            // window.location.href = '/login'; // Optional: handled by protected routes usually
+            // Unauthorized — Clear local session
+            console.warn("Unauthorized request — clearing session and redirecting...");
+            localStorage.removeItem('user');
+            localStorage.removeItem('foodPartner');
+            localStorage.removeItem('token');
+            // window.location.href = '/user/login'; 
         }
 
         console.error(`[API Error] ${error.config?.url}:`, error.message);

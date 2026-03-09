@@ -23,7 +23,9 @@ const UserLogin = () => {
         { email, password }
       );
       
-      localStorage.setItem('user', JSON.stringify(response.data.user));
+      const { user, token } = response.data;
+      localStorage.setItem('user', JSON.stringify(user));
+      localStorage.setItem('token', token);
       navigate('/home');
     } catch (err) {
       console.error('[UserLogin] Error:', err);

@@ -31,9 +31,10 @@ const FoodPartnerRegister = () => {
       });
       
       console.log('[FoodPartnerRegister] Success:', response.data);
-      const partner = response.data.foodPartner;
-      localStorage.setItem('foodPartner', JSON.stringify(partner));
-      navigate(`/foodpartner/${partner.foodPartnerId}`);
+      const { foodPartner, token } = response.data;
+      localStorage.setItem('foodPartner', JSON.stringify(foodPartner));
+      localStorage.setItem('token', token);
+      navigate(`/foodpartner/${foodPartner.foodPartnerId}`);
     } catch (err) {
       console.error('[FoodPartnerRegister] Error:', err);
       setError(err.response?.data?.message || 'Registration failed. Please check your business details.');

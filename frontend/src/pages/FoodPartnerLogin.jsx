@@ -25,9 +25,10 @@ const FoodPartnerLogin = () => {
       });
       
       console.log('[FoodPartnerLogin] Success:', response.data);
-      const partner = response.data.foodPartner;
-      localStorage.setItem('foodPartner', JSON.stringify(partner));
-      navigate(`/foodpartner/${partner.foodPartnerId}`);
+      const { foodPartner, token } = response.data;
+      localStorage.setItem('foodPartner', JSON.stringify(foodPartner));
+      localStorage.setItem('token', token);
+      navigate(`/foodpartner/${foodPartner.foodPartnerId}`);
     } catch (err) {
       console.error('[FoodPartnerLogin] Error:', err);
       setError(err.response?.data?.message || 'Partner login failed. Please check your credentials.');
