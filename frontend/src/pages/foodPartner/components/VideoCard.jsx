@@ -1,15 +1,20 @@
 import React from 'react';
-import { Heart, MessageCircle } from 'lucide-react';
+import { Heart, MessageCircle, Trash2 } from 'lucide-react';
 
 /**
  * Sub-component: Video Card for the Grid
  */
-const VideoCard = ({ video, onClick }) => {
+const VideoCard = ({ video, onClick, onDelete }) => {
     const handlePlay = (e) => e.target.play();
     const handlePause = (e) => e.target.pause();
 
     return (
         <div className="video-card" onClick={onClick}>
+            {onDelete && (
+                <button className="delete-reel-btn" onClick={onDelete} title="Delete Reel">
+                    <Trash2 size={16} />
+                </button>
+            )}
             <video 
                 src={video.video} 
                 muted
@@ -33,10 +38,6 @@ const VideoCard = ({ video, onClick }) => {
                             />
                             <span>{video.likesCount || 0}</span>
                         </div>
-                        {/* <div className="metric-stat">
-                            <MessageCircle size={12} fill="white" strokeWidth={0} />
-                            <span>{video.commentsCount || 0}</span>
-                        </div> */}
                     </div>
                 </div>
             </div>

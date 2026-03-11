@@ -313,12 +313,6 @@ export default function FoodCarousel() {
           >
             {/* Phone Screen */}
             <div className="phone-screen preserve-3d">
-              {/* Screen Glow */}
-              <motion.div
-                className="screen-glow"
-                animate={{ backgroundColor: bgColor }}
-              />
-
               {/* 3D Floating Food */}
               <AnimatePresence custom={direction} mode="sync">
                 <motion.div

@@ -14,7 +14,11 @@ const uploadVideo = async (fileBuffer, fileName) => {
         fileName: fileName,
         folder: "food-videos"
     });
-    return result.url;
+    return { url: result.url, fileId: result.fileId };
 }
 
-module.exports = { uploadVideo };
+const deleteVideo = async (fileId) => {
+    return await imagekit.deleteFile(fileId);
+}
+
+module.exports = { uploadVideo, deleteVideo };

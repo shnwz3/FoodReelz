@@ -1,5 +1,5 @@
 const foodModel = require("../models/food.model");
-const { uploadVideo } = require("../services/storage.service");
+const { uploadVideo, deleteVideo } = require("../services/storage.service");
 const crypto = require("crypto");
 const likesModel = require("../models/likes.model");
 const userModel = require("../models/user.model");
@@ -10,11 +10,12 @@ const createFood = async (req, res) => {
         const { name, caption } = req.body;
         const file = req.file;
 
-        const videoUrl = await uploadVideo(file.buffer, crypto.randomUUID());
+        const { url, fileId } = await uploadVideo(file.buffer, crypto.randomUUID());
         const food = await foodModel.create({
             name,
             caption,
-            video: videoUrl,
+            video: url,
+            videoFileId: fileId,
             foodPartnerId: req.foodpartner._id
         });
         res.status(201).json({ message: "Food added successfully", food });
@@ -106,6 +107,34 @@ const getFoodsByPartnerId = async (req, res) => {
     }
 }
 
+const deleteFood = async (req, res) => {
+    try {
+        const { foodId } = req.params;
+        
+        // 1. Find the food first to get the File ID
+        const food = await foodModel.findById(foodId);
+        if (!food) return res.status(404).json({ message: "Food not found" });
+
+        // 2. Perform concurrent cleanup: Cloud Storage + Engagement Data + Database Record
+        await Promise.all([
+            // Delete video from ImageKit (cloud storage)
+            deleteVideo(food.videoFileId).catch(err => {
+                console.error(`Failed to delete video ${food.videoFileId} from storage:`, err.message);
+                // We continue even if cloud delete fails to ensure DB is cleaned up
+            }),
+            // Delete associated engagement data
+            likesModel.deleteMany({ food: foodId }),
+            saveModel.deleteMany({ food: foodId }),
+            // Delete the food record itself
+            foodModel.findByIdAndDelete(foodId)
+        ]);
+
+        res.status(200).json({ message: "Food and associated data deleted successfully" });
+    }
+    catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+}
 
 const likeFood = async (req, res) => {
     try {
@@ -241,4 +270,4 @@ const getSavedUsersByFood = async (req, res) => {
     }
 }
 
-module.exports = { createFood, getAllFoods, getFoodsByPartnerId, likeFood, saveFood, getLikedFoods, getLikedUsersByFood, getSavedUsersByFood };
+module.exports = { createFood, getAllFoods, getFoodsByPartnerId, likeFood, saveFood, getLikedFoods, getLikedUsersByFood, getSavedUsersByFood, deleteFood };

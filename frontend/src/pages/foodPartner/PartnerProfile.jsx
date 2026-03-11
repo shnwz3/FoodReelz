@@ -10,6 +10,7 @@ import VideoCard from './components/VideoCard';
 import PartnerReelsOverlay from './components/PartnerReelsOverlay';
 import ProfileSkeleton from './components/ProfileSkeleton';
 import UploadReelModal from './components/UploadReelModal';
+import ConfirmModal from '../../components/ConfirmModal';
 
 import UserMenu from '../../components/UserMenu';
 
@@ -37,6 +38,8 @@ const PartnerProfile = () => {
     const [previewUrl, setPreviewUrl] = useState(null);
     const [videoFile, setVideoFile] = useState(null);
     const [uploadProgress, setUploadProgress] = useState(0);
+
+    const [confirmDelete, setConfirmDelete] = useState({ isOpen: false, videoId: null });
 
     const fetchData = useCallback(async () => {
         setState(prev => ({ ...prev, loading: true }));
@@ -135,6 +138,29 @@ const PartnerProfile = () => {
         }
     };
 
+    const handleDeleteVideo = (e, videoId) => {
+        e.stopPropagation();
+        setConfirmDelete({ isOpen: true, videoId });
+    };
+
+    const confirmDeleteVideo = async () => {
+        const { videoId } = confirmDelete;
+        try {
+            await api.delete(`/food/${videoId}`);
+            
+            // Invalidate caches
+            invalidateCache(`/auth/food-partner/${id}`);
+            invalidateCache('/food');
+            
+            // Refresh data
+            fetchData();
+            setConfirmDelete({ isOpen: false, videoId: null });
+        } catch (err) {
+            console.error('[PartnerProfile] Delete Error:', err);
+            alert('Delete failed: ' + (err.response?.data?.message || err.message));
+        }
+    };
+
     if (state.loading && !state.partner) {
         return <ProfileSkeleton />;
     }
@@ -203,6 +229,7 @@ const PartnerProfile = () => {
                                     key={video._id} 
                                     video={video} 
                                     onClick={() => setSelectedReelIndex(index)}
+                                    onDelete={isOwner ? (e) => handleDeleteVideo(e, video._id) : null}
                                 />
                             ))
                         ) : !isOwner && (
@@ -243,6 +270,17 @@ const PartnerProfile = () => {
                     partnerName={state.partner.name}
                 />
             )}
+
+            {/* Custom Confirm Modal */}
+            <ConfirmModal 
+                isOpen={confirmDelete.isOpen}
+                onClose={() => setConfirmDelete({ isOpen: false, videoId: null })}
+                onConfirm={confirmDeleteVideo}
+                title="Delete Reel?"
+                message="Are you sure you want to delete this reel? This action will permanently remove the video and all its engagement data."
+                confirmText="Delete Video"
+                type="danger"
+            />
         </div>
     );
 };

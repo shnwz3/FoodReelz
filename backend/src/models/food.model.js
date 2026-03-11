@@ -10,6 +10,10 @@ const foodSchema = new mongoose.Schema({
     video: {
         type: String,
     },
+    videoFileId: {
+        type: String,
+        required: true
+    },
     foodPartnerId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "foodPartner",
