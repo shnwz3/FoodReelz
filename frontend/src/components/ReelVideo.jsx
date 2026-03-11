@@ -5,8 +5,22 @@ import api from '../api/axios';
 import { cachedGet, invalidateCache } from '../api/apiCache';
 import { Heart, Bookmark, Share2, MoreVertical, MessageCircle } from 'lucide-react';
 import SocialUsersModal from './SocialUsersModal';
+import CommentsModal from './CommentsModal';
+import ConfirmModal from './ConfirmModal';
 
-const ReelVideo = React.forwardRef(({ id, videoUrl, title, userName, partnerId, caption, isLiked: initialIsLiked, isSaved: initialIsSaved, likesCount: initialLikesCount, savesCount: initialSavesCount }, ref) => {
+const ReelVideo = React.forwardRef(({ 
+  id, 
+  videoUrl, 
+  title, 
+  userName, 
+  partnerId, 
+  caption, 
+  isLiked: initialIsLiked, 
+  isSaved: initialIsSaved, 
+  likesCount: initialLikesCount, 
+  savesCount: initialSavesCount,
+  commentsCount: initialCommentsCount 
+}, ref) => {
   const videoRef = useRef(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -18,10 +32,9 @@ const ReelVideo = React.forwardRef(({ id, videoUrl, title, userName, partnerId, 
   const [likesCount, setLikesCount] = useState(initialLikesCount || 0);
   const [savesCount, setSavesCount] = useState(initialSavesCount || 0);
 
-  // Modal States
   const [socialModal, setSocialModal] = useState({ isOpen: false, title: '', type: '', users: [], loading: false });
-
-  // --- Handlers ---
+  const [commentsModal, setCommentsModal] = useState({ isOpen: false });
+  const [commentsCount, setCommentsCount] = useState(initialCommentsCount || 0);
 
 
   const fetchSocialUsers = async (type) => {
@@ -67,13 +80,20 @@ const ReelVideo = React.forwardRef(({ id, videoUrl, title, userName, partnerId, 
       const response = await api.post('/food/like', { food: id });
       setLikesCount(response.data.likesCount);
       setIsLiked(response.data.isLiked);
-      // Bust social user cache for this reel
-      invalidateCache(`/food/${id}/`);
+      invalidateCache(`/food/${id}/likes`);
     } catch (err) {
       setIsLiked(!newLikedState);
       setLikesCount(prev => !newLikedState ? prev + 1 : prev - 1);
       if (err.response?.status === 401) {
-        alert("Please login as a user to like reels!");
+        setAlertModal({
+          isOpen: true,
+          title: "Login Required",
+          message: "Please login as a user to join the community and like reels!",
+          type: "warning",
+          confirmText: "Go to Login",
+          cancelText: "Maybe Later",
+          onConfirm: () => navigate('/user/login')
+        });
       }
     }
   };
@@ -88,18 +108,23 @@ const ReelVideo = React.forwardRef(({ id, videoUrl, title, userName, partnerId, 
       const response = await api.post('/food/save', { food: id });
       setSavesCount(response.data.savesCount);
       setIsSaved(response.data.isSaved);
-      // Bust social user cache for this reel
-      invalidateCache(`/food/${id}/`);
+      invalidateCache(`/food/${id}/saves`);
     } catch (err) {
       setIsSaved(!newSavedState);
       setSavesCount(prev => !newSavedState ? prev + 1 : prev - 1);
       if (err.response?.status === 401) {
-        alert("Please login as a user to save reels!");
+        setAlertModal({
+          isOpen: true,
+          title: "Login Required",
+          message: "Please login as a user to save your favorite reels!",
+          type: "warning",
+          confirmText: "Go to Login",
+          cancelText: "Maybe Later",
+          onConfirm: () => navigate('/user/login')
+        });
       }
     }
   };
-
-  // --- Intersection Observer Logic ---
 
   useEffect(() => {
     const observerOptions = {
@@ -137,8 +162,6 @@ const ReelVideo = React.forwardRef(({ id, videoUrl, title, userName, partnerId, 
       }
     };
   }, []);
-
-  // --- Render Helpers ---
 
   const ProgressBar = useMemo(() => (
     <div className="progress-bar-container">
@@ -191,18 +214,18 @@ const ReelVideo = React.forwardRef(({ id, videoUrl, title, userName, partnerId, 
       </div>
 
       <div className="action-item">
+        <div className="action-icon-wrapper" onClick={(e) => { e.stopPropagation(); setCommentsModal({ isOpen: true }); }}>
+          <MessageCircle size={26} />
+        </div>
+        <span>{commentsCount}</span>
+      </div>
+
+      <div className="action-item">
         <div className={`action-icon-wrapper ${isSaved ? 'active save' : ''}`} onClick={handleSave}>
           <Bookmark size={26} fill={isSaved ? "currentColor" : "none"} />
         </div>
         <span onClick={(e) => { e.stopPropagation(); fetchSocialUsers('saves'); }}>{savesCount}</span>
       </div>
-
-      {/* <div className="action-item">
-        <div className="action-icon-wrapper">
-          <MessageCircle size={26} />
-        </div>
-        <span>0</span>
-      </div> */}
 
       <div className="action-item">
         <div className="action-icon-wrapper">
@@ -210,7 +233,13 @@ const ReelVideo = React.forwardRef(({ id, videoUrl, title, userName, partnerId, 
         </div>
       </div>
     </div>
-  ), [isLiked, isSaved, likesCount, savesCount]);
+  ), [isLiked, isSaved, likesCount, savesCount, commentsCount]);
+
+  const [alertModal, setAlertModal] = useState({ isOpen: false, title: '', message: '', type: 'info', confirmText: 'OK', onConfirm: null });
+
+  const handleCommentUpdate = (change) => {
+    setCommentsCount(prev => prev + change);
+  };
 
   return (
     <article ref={ref} className="reel-item">
@@ -236,6 +265,26 @@ const ReelVideo = React.forwardRef(({ id, videoUrl, title, userName, partnerId, 
         title={socialModal.title}
         users={socialModal.users}
         loading={socialModal.loading}
+      />
+
+      <CommentsModal 
+        isOpen={commentsModal.isOpen}
+        onClose={() => setCommentsModal({ isOpen: false })}
+        foodId={id}
+        partnerId={partnerId}
+        onCommentAdded={() => handleCommentUpdate(1)}
+        onCommentDeleted={() => handleCommentUpdate(-1)}
+      />
+
+      <ConfirmModal 
+        isOpen={alertModal.isOpen}
+        onClose={() => setAlertModal(prev => ({ ...prev, isOpen: false }))}
+        onConfirm={alertModal.onConfirm}
+        title={alertModal.title}
+        message={alertModal.message}
+        type={alertModal.type}
+        confirmText={alertModal.confirmText}
+        cancelText={alertModal.cancelText}
       />
     </article>
   );

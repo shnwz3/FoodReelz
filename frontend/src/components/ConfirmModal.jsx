@@ -33,10 +33,12 @@ const ConfirmModal = ({
                 </div>
 
                 <div className="confirm-modal-actions">
-                    <button className="confirm-btn-cancel" onClick={onClose}>
-                        {cancelText}
-                    </button>
-                    <button className={`confirm-btn-action ${type}`} onClick={onConfirm}>
+                    {cancelText && (
+                        <button className="confirm-btn-cancel" onClick={onClose}>
+                            {cancelText}
+                        </button>
+                    )}
+                    <button className={`confirm-btn-action ${type}`} onClick={onConfirm || onClose}>
                         {confirmText}
                     </button>
                 </div>

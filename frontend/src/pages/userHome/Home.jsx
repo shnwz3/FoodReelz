@@ -109,6 +109,7 @@ const Home = () => {
                                     isSaved={fooditem.isSaved}
                                     likesCount={fooditem.likesCount}
                                     savesCount={fooditem.savesCount}
+                                    commentsCount={fooditem.commentsCount}
                                 />
                             );
                         })}

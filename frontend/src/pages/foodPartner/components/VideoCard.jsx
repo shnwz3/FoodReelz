@@ -38,6 +38,10 @@ const VideoCard = ({ video, onClick, onDelete }) => {
                             />
                             <span>{video.likesCount || 0}</span>
                         </div>
+                        <div className="metric-stat">
+                            <MessageCircle size={12} fill="white" strokeWidth={0} />
+                            <span>{video.commentsCount || 0}</span>
+                        </div>
                     </div>
                 </div>
             </div>

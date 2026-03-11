@@ -93,12 +93,19 @@ const PartnerProfile = () => {
         }
     };
 
+    const [alertModal, setAlertModal] = useState({ isOpen: false, title: '', message: '', type: 'info' });
+
     const handleUpload = async (e) => {
         e.preventDefault();
         setUploading(true);
 
         if (!videoFile) {
-            alert('Please select a video file first.');
+            setAlertModal({
+                isOpen: true,
+                title: "File Missing",
+                message: "Please select a mouth-watering video file first!",
+                type: "warning"
+            });
             setUploading(false);
             return;
         }
@@ -108,9 +115,8 @@ const PartnerProfile = () => {
         formData.append('caption', e.target.caption.value);
         formData.append('video', videoFile);
 
-
         try {
-            const response = await api.post('/food', formData, {
+            await api.post('/food', formData, {
                 headers: { 'Content-Type': 'multipart/form-data' },
                 onUploadProgress: (progressEvent) => {
                     if (progressEvent.total) {
@@ -120,19 +126,23 @@ const PartnerProfile = () => {
                 }
             });
             
-            // Invalidate caches so fresh data is fetched
             invalidateCache(`/auth/food-partner/${id}`);
             invalidateCache('/food');
             
             setShowUploadModal(false);
             setPreviewUrl(null);
             setVideoFile(null);
-            setUploadProgress(0); // Reset progress
+            setUploadProgress(0);
             fetchData();
         } catch (err) {
             console.error('[PartnerProfile] Upload Error:', err);
-            alert('Upload failed: ' + (err.response?.data?.message || err.message));
-            setUploadProgress(0); // Reset on error
+            setAlertModal({
+                isOpen: true,
+                title: "Upload Failed",
+                message: err.response?.data?.message || err.message,
+                type: "danger"
+            });
+            setUploadProgress(0);
         } finally {
             setUploading(false);
         }
@@ -147,17 +157,18 @@ const PartnerProfile = () => {
         const { videoId } = confirmDelete;
         try {
             await api.delete(`/food/${videoId}`);
-            
-            // Invalidate caches
             invalidateCache(`/auth/food-partner/${id}`);
             invalidateCache('/food');
-            
-            // Refresh data
             fetchData();
             setConfirmDelete({ isOpen: false, videoId: null });
         } catch (err) {
             console.error('[PartnerProfile] Delete Error:', err);
-            alert('Delete failed: ' + (err.response?.data?.message || err.message));
+            setAlertModal({
+                isOpen: true,
+                title: "Delete Failed",
+                message: err.response?.data?.message || err.message,
+                type: "danger"
+            });
         }
     };
 
@@ -271,7 +282,7 @@ const PartnerProfile = () => {
                 />
             )}
 
-            {/* Custom Confirm Modal */}
+            {/* Custom Confirm Modal for Deletion */}
             <ConfirmModal 
                 isOpen={confirmDelete.isOpen}
                 onClose={() => setConfirmDelete({ isOpen: false, videoId: null })}
@@ -280,6 +291,17 @@ const PartnerProfile = () => {
                 message="Are you sure you want to delete this reel? This action will permanently remove the video and all its engagement data."
                 confirmText="Delete Video"
                 type="danger"
+            />
+
+            {/* Custom Modal for Generic Alerts/Errors */}
+            <ConfirmModal 
+                isOpen={alertModal.isOpen}
+                onClose={() => setAlertModal(prev => ({ ...prev, isOpen: false }))}
+                title={alertModal.title}
+                message={alertModal.message}
+                type={alertModal.type}
+                confirmText="OK"
+                cancelText={null} // Alert only - no cancel button
             />
         </div>
     );

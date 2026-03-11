@@ -4,6 +4,7 @@ const crypto = require("crypto");
 const likesModel = require("../models/likes.model");
 const userModel = require("../models/user.model");
 const saveModel = require("../models/save.model");
+const commentsModel = require("../models/comments.model");
 
 const createFood = async (req, res) => {
     try {
@@ -111,28 +112,34 @@ const deleteFood = async (req, res) => {
     try {
         const { foodId } = req.params;
         
-        // 1. Find the food first to get the File ID
         const food = await foodModel.findById(foodId);
-        if (!food) return res.status(404).json({ message: "Food not found" });
+        if (!food) {
+            return res.status(404).json({ 
+                success: false,
+                message: "Target food reel not found" 
+            });
+        }
 
-        // 2. Perform concurrent cleanup: Cloud Storage + Engagement Data + Database Record
         await Promise.all([
-            // Delete video from ImageKit (cloud storage)
             deleteVideo(food.videoFileId).catch(err => {
-                console.error(`Failed to delete video ${food.videoFileId} from storage:`, err.message);
-                // We continue even if cloud delete fails to ensure DB is cleaned up
+                console.error(`[Cleanup Trace] Storage deletion failed for ID ${food.videoFileId}:`, err.message);
             }),
-            // Delete associated engagement data
+            
             likesModel.deleteMany({ food: foodId }),
             saveModel.deleteMany({ food: foodId }),
-            // Delete the food record itself
+            commentsModel.deleteMany({ food: foodId }),
+            
             foodModel.findByIdAndDelete(foodId)
         ]);
 
-        res.status(200).json({ message: "Food and associated data deleted successfully" });
+        return res.status(200).json({ 
+            success: true,
+            message: "Reel and all associated engagement data purged successfully" 
+        });
     }
     catch (error) {
-        res.status(500).json({ error: error.message });
+        console.error(`[Critical Error] deleteFood failed for ID ${req.params.foodId}:`, error);
+        res.status(500).json({ success: false, error: "Internal server error during reel deletion" });
     }
 }
 
@@ -143,47 +150,50 @@ const likeFood = async (req, res) => {
         const user = req.user;
 
         if (!targetFoodId) {
-            return res.status(400).json({ message: "Food ID is required" });
+            return res.status(400).json({ success: false, message: "Food ID is required" });
         }
 
-        // 1. Verify food existence (Senior approach: Don't like ghosts)
         const foodItem = await foodModel.findById(targetFoodId);
         if (!foodItem) {
-            return res.status(404).json({ message: "Food item not found" });
+            return res.status(404).json({ success: false, message: "Food item not found" });
         }
 
-        const isLiked = await likesModel.findOne({ user: user._id, food: targetFoodId });
+        const existingLike = await likesModel.findOne({ user: user._id, food: targetFoodId });
 
-        // unlike
-        if (isLiked) {
+        if (existingLike) {
+            // Un-liking operation: Atomic decrement + deletion
             const [updatedFood] = await Promise.all([
                 foodModel.findByIdAndUpdate(targetFoodId, { $inc: { likesCount: -1 } }, { returnDocument: 'after' }),
-                likesModel.deleteOne({ _id: isLiked._id })
+                likesModel.deleteOne({ _id: existingLike._id })
             ]);
+
             return res.status(200).json({
-                message: "Food unliked successfully",
+                success: true,
+                message: "Like removed",
                 likesCount: updatedFood.likesCount,
                 isLiked: false
             });
         }
 
-        // like
-        const like = await likesModel.create({ user: user._id, food: targetFoodId });
-        const updatedFood = await foodModel.findByIdAndUpdate(targetFoodId, { $inc: { likesCount: 1 } }, { returnDocument: 'after' });
+        // Liking operation: Atomic increment + creation
+        const [like, updatedFood] = await Promise.all([
+            likesModel.create({ user: user._id, food: targetFoodId }),
+            foodModel.findByIdAndUpdate(targetFoodId, { $inc: { likesCount: 1 } }, { returnDocument: 'after' })
+        ]);
 
-        res.status(201).json({
-            message: "Food liked successfully",
+        return res.status(201).json({
+            success: true,
+            message: "Liked successfully",
             likesCount: updatedFood.likesCount,
             isLiked: true,
             like
         });
     }
     catch (error) {
-        // Handle unique constraint violation (if race condition occurs despite check)
         if (error.code === 11000) {
-            return res.status(400).json({ message: "Already liked" });
+            return res.status(400).json({ success: false, message: "Already liked" });
         }
-        res.status(500).json({ error: error.message });
+        res.status(500).json({ success: false, error: error.message });
     }
 }
 
@@ -205,36 +215,40 @@ const saveFood = async (req, res) => {
         const user = req.user;
 
         if (!targetFoodId) {
-            return res.status(400).json({ message: "Food ID is required" });
+            return res.status(400).json({ success: false, message: "Food ID is required" });
         }
 
-        // 1. Verify existence
         const foodItem = await foodModel.findById(targetFoodId);
         if (!foodItem) {
-            return res.status(404).json({ message: "Food item not found" });
+            return res.status(404).json({ success: false, message: "Food item not found" });
         }
 
-        const isSaved = await saveModel.findOne({ user: user._id, food: targetFoodId });
+        const existingSave = await saveModel.findOne({ user: user._id, food: targetFoodId });
 
-        // unsave
-        if (isSaved) {
+        if (existingSave) {
+            // Un-saving: Atomic decrement + deletion
             const [updatedFood] = await Promise.all([
                 foodModel.findByIdAndUpdate(targetFoodId, { $inc: { savesCount: -1 } }, { returnDocument: 'after' }),
-                saveModel.deleteOne({ _id: isSaved._id })
+                saveModel.deleteOne({ _id: existingSave._id })
             ]);
+
             return res.status(200).json({
-                message: "Food unsaved successfully",
+                success: true,
+                message: "Removed from saves",
                 savesCount: updatedFood.savesCount,
                 isSaved: false
             });
         }
 
-        // save
-        const save = await saveModel.create({ user: user._id, food: targetFoodId });
-        const updatedFood = await foodModel.findByIdAndUpdate(targetFoodId, { $inc: { savesCount: 1 } }, { returnDocument: 'after' });
+        // Saving: Atomic increment + creation
+        const [save, updatedFood] = await Promise.all([
+            saveModel.create({ user: user._id, food: targetFoodId }),
+            foodModel.findByIdAndUpdate(targetFoodId, { $inc: { savesCount: 1 } }, { returnDocument: 'after' })
+        ]);
 
         res.status(201).json({
-            message: "Food saved successfully",
+            success: true,
+            message: "Saved successfully",
             savesCount: updatedFood.savesCount,
             isSaved: true,
             save
@@ -242,9 +256,9 @@ const saveFood = async (req, res) => {
     }
     catch (error) {
         if (error.code === 11000) {
-            return res.status(400).json({ message: "Already saved" });
+            return res.status(400).json({ success: false, message: "Already saved" });
         }
-        res.status(500).json({ error: error.message });
+        res.status(500).json({ success: false, error: error.message });
     }
 }
 

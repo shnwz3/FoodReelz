@@ -2,7 +2,8 @@ const express = require("express");
 const router = express.Router();
 const multer = require("multer");
 const { createFood, getAllFoods, getFoodsByPartnerId, likeFood, saveFood, getLikedFoods, getLikedUsersByFood, getSavedUsersByFood, deleteFood } = require("../controllers/food.controller");
-const { authFoodPartnerMiddleware, authUserMiddleware, optionalAuth } = require("../middlewares/auth.middleware");
+const { addComment, getCommentsByFoodId, deleteComment } = require("../controllers/comment.controller");
+const { authFoodPartnerMiddleware, authUserMiddleware, optionalAuth, anyAuth } = require("../middlewares/auth.middleware");
 
 const upload = multer({ storage: multer.memoryStorage() });
 
@@ -42,5 +43,10 @@ router.get("/liked", authUserMiddleware, getLikedFoods);
 // Engagement routes
 router.get("/:foodId/likes", getLikedUsersByFood);
 router.get("/:foodId/saves", getSavedUsersByFood);
+
+// Comment routes
+router.post("/:foodId/comments", authUserMiddleware, addComment);
+router.get("/:foodId/comments", getCommentsByFoodId);
+router.delete("/comments/:commentId", anyAuth, deleteComment);
 
 module.exports = router;

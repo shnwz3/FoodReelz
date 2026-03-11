@@ -50,6 +50,7 @@ const PartnerReelsOverlay = ({ videos, startIndex, onClose, partnerName }) => {
                         isSaved={video.isSaved}
                         likesCount={video.likesCount}
                         savesCount={video.savesCount}
+                        commentsCount={video.commentsCount}
                     />
                 ))}
             </div>

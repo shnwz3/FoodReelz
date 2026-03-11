@@ -71,4 +71,24 @@ const optionalAuth = async (req, res, next) => {
     }
 }
 
-module.exports = { authFoodPartnerMiddleware, authUserMiddleware, optionalAuth };
+const anyAuth = async (req, res, next) => {
+    const token = getToken(req);
+    if (!token) {
+        return res.status(401).json({ success: false, message: "Please login first" });
+    }
+    try {
+        const decodedToken = jwt.verify(token, process.env.JWT_TOKEN);
+        
+        // Populate a unified user object with role info
+        req.user = { 
+            _id: decodedToken.id, 
+            role: decodedToken.role 
+        };
+        next();
+    }
+    catch (error) {
+        res.status(401).json({ success: false, message: "Invalid or expired token" });
+    }
+}
+
+module.exports = { authFoodPartnerMiddleware, authUserMiddleware, optionalAuth, anyAuth };
