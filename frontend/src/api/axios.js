@@ -29,7 +29,7 @@ api.interceptors.response.use(
             localStorage.removeItem('user');
             localStorage.removeItem('foodPartner');
             localStorage.removeItem('token');
-            // window.location.href = '/user/login'; 
+            window.location.href = '/'; 
         }
 
         console.error(`[API Error] ${error.config?.url}:`, error.message);

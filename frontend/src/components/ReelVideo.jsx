@@ -6,7 +6,7 @@ import { cachedGet, invalidateCache } from '../api/apiCache';
 import { Heart, Bookmark, Share2, MoreVertical, MessageCircle } from 'lucide-react';
 import SocialUsersModal from './SocialUsersModal';
 
-const ReelVideo = ({ id, videoUrl, title, userName, partnerId, caption, isLiked: initialIsLiked, isSaved: initialIsSaved, likesCount: initialLikesCount, savesCount: initialSavesCount }) => {
+const ReelVideo = React.forwardRef(({ id, videoUrl, title, userName, partnerId, caption, isLiked: initialIsLiked, isSaved: initialIsSaved, likesCount: initialLikesCount, savesCount: initialSavesCount }, ref) => {
   const videoRef = useRef(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -213,7 +213,7 @@ const ReelVideo = ({ id, videoUrl, title, userName, partnerId, caption, isLiked:
   ), [isLiked, isSaved, likesCount, savesCount]);
 
   return (
-    <article className="reel-item">
+    <article ref={ref} className="reel-item">
       <video
         ref={videoRef}
         src={videoUrl}
@@ -239,6 +239,6 @@ const ReelVideo = ({ id, videoUrl, title, userName, partnerId, caption, isLiked:
       />
     </article>
   );
-};
+});
 
 export default React.memo(ReelVideo);

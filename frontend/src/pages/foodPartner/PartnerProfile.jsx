@@ -30,13 +30,13 @@ const PartnerProfile = () => {
         error: null
     });
 
-    // Ownership and UI State
     const [isOwner, setIsOwner] = useState(false);
     const [showUploadModal, setShowUploadModal] = useState(false);
     const [selectedReelIndex, setSelectedReelIndex] = useState(null);
     const [uploading, setUploading] = useState(false);
     const [previewUrl, setPreviewUrl] = useState(null);
     const [videoFile, setVideoFile] = useState(null);
+    const [uploadProgress, setUploadProgress] = useState(0);
 
     const fetchData = useCallback(async () => {
         setState(prev => ({ ...prev, loading: true }));
@@ -92,7 +92,6 @@ const PartnerProfile = () => {
 
     const handleUpload = async (e) => {
         e.preventDefault();
-        console.log('[PartnerProfile] Starting Upload...');
         setUploading(true);
 
         if (!videoFile) {
@@ -106,18 +105,17 @@ const PartnerProfile = () => {
         formData.append('caption', e.target.caption.value);
         formData.append('video', videoFile);
 
-        console.log('[PartnerProfile] FormData built (via State):', {
-            name: e.target.name.value,
-            caption: e.target.caption.value,
-            file: videoFile.name
-        });
 
         try {
-            console.log('[PartnerProfile] Sending POST to /api/food...');
             const response = await api.post('/food', formData, {
-                headers: { 'Content-Type': 'multipart/form-data' }
+                headers: { 'Content-Type': 'multipart/form-data' },
+                onUploadProgress: (progressEvent) => {
+                    if (progressEvent.total) {
+                        const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+                        setUploadProgress(percentCompleted);
+                    }
+                }
             });
-            console.log('[PartnerProfile] Upload Success:', response.data);
             
             // Invalidate caches so fresh data is fetched
             invalidateCache(`/auth/food-partner/${id}`);
@@ -126,10 +124,12 @@ const PartnerProfile = () => {
             setShowUploadModal(false);
             setPreviewUrl(null);
             setVideoFile(null);
+            setUploadProgress(0); // Reset progress
             fetchData();
         } catch (err) {
             console.error('[PartnerProfile] Upload Error:', err);
             alert('Upload failed: ' + (err.response?.data?.message || err.message));
+            setUploadProgress(0); // Reset on error
         } finally {
             setUploading(false);
         }
@@ -218,9 +218,11 @@ const PartnerProfile = () => {
             {showUploadModal && (
                 <UploadReelModal 
                     onClose={() => {
+                        if (uploading) return; // Prevent closing while uploading
                         setShowUploadModal(false);
                         setPreviewUrl(null);
                         setVideoFile(null);
+                        setUploadProgress(0);
                     }}
                     handleUpload={handleUpload}
                     handleFileChange={handleFileChange}
@@ -228,6 +230,7 @@ const PartnerProfile = () => {
                     setPreviewUrl={setPreviewUrl}
                     setVideoFile={setVideoFile}
                     uploading={uploading}
+                    uploadProgress={uploadProgress}
                 />
             )}
 

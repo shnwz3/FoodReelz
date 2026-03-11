@@ -105,7 +105,7 @@ export default function FoodCarousel() {
     return () => window.removeEventListener('mousemove', handleMouseMove);
   }, []);
 
-  // Scroll to change
+  // Scroll & Swipe to change
   useEffect(() => {
     let lastScrollTime = 0;
     const scrollThreshold = 40;
@@ -121,8 +121,48 @@ export default function FoodCarousel() {
       }
     };
 
+    // Touch event variables
+    let touchStartY = 0;
+    let touchStartX = 0;
+    const swipeThreshold = 50;
+
+    const handleTouchStart = (e) => {
+      touchStartY = e.touches[0].clientY;
+      touchStartX = e.touches[0].clientX;
+    };
+
+    const handleTouchEnd = (e) => {
+      if (isNavigating) return;
+      const touchEndY = e.changedTouches[0].clientY;
+      const touchEndX = e.changedTouches[0].clientX;
+
+      const diffY = touchStartY - touchEndY;
+      const diffX = touchStartX - touchEndX;
+
+      // Ensure it is a significant swipe
+      if (Math.abs(diffX) > swipeThreshold || Math.abs(diffY) > swipeThreshold) {
+        // Find if horizontal or vertical swipe is dominant
+        if (Math.abs(diffX) > Math.abs(diffY)) {
+          // Horizontal Swipe
+          if (diffX > 0) paginate(1); // Swipe left = next
+          else paginate(-1);          // Swipe right = prev
+        } else {
+          // Vertical Swipe
+          if (diffY > 0) paginate(1); // Swipe up = next
+          else paginate(-1);          // Swipe down = prev
+        }
+      }
+    };
+
     window.addEventListener('wheel', handleWheel, { passive: true });
-    return () => window.removeEventListener('wheel', handleWheel);
+    window.addEventListener('touchstart', handleTouchStart, { passive: true });
+    window.addEventListener('touchend', handleTouchEnd, { passive: true });
+    
+    return () => {
+      window.removeEventListener('wheel', handleWheel);
+      window.removeEventListener('touchstart', handleTouchStart);
+      window.removeEventListener('touchend', handleTouchEnd);
+    };
   }, [isNavigating, foods.length]);
 
   // Framer Motion Variants

@@ -12,7 +12,8 @@ const UploadReelModal = ({
     previewUrl, 
     setPreviewUrl, 
     setVideoFile,
-    uploading 
+    uploading,
+    uploadProgress
 }) => {
     return (
         <div className="upload-modal-overlay">
@@ -83,11 +84,27 @@ const UploadReelModal = ({
                         </div>
                     </div>
 
+                    {uploading && (
+                        <div className="upload-progress-container">
+                            <div className="upload-progress-header">
+                                <span>Uploading your delicious reel...</span>
+                                <span>{uploadProgress}%</span>
+                            </div>
+                            <div className="upload-progress-track">
+                                <div 
+                                    className="upload-progress-fill" 
+                                    style={{ width: `${uploadProgress}%` }}
+                                ></div>
+                            </div>
+                        </div>
+                    )}
+
                     <div className="modal-actions">
                         <button 
                             type="button" 
                             onClick={onClose} 
                             className="secondary-btn"
+                            disabled={uploading}
                         >
                             Cancel
                         </button>
@@ -99,7 +116,7 @@ const UploadReelModal = ({
                             {uploading ? (
                                 <span className="btn-content">
                                     <span className="spinner"></span>
-                                    Posting...
+                                    Uploading...
                                 </span>
                             ) : 'Post Reel'}
                         </button>

@@ -24,11 +24,8 @@ const authFoodPartnerMiddleware = async (req, res, next) => {
             return res.status(403).json({ message: "Access denied. Partners only." });
         }
 
-        const foodpartner = await foodPartnerModel.findById(decodedToken.id);
-        if (!foodpartner) {
-            return res.status(404).json({ message: "Food partner not found" });
-        }
-        req.foodpartner = foodpartner;
+        // Stateless authentication: skip DB lookup for performance
+        req.foodpartner = { _id: decodedToken.id };
         next();
     }
     catch (error) {
@@ -48,11 +45,8 @@ const authUserMiddleware = async (req, res, next) => {
             return res.status(403).json({ message: "Access denied. Users only." });
         }
 
-        const user = await userModel.findById(decodedToken.id);
-        if (!user) {
-            return res.status(404).json({ message: "User not found" });
-        }
-        req.user = user;
+        // Stateless authentication: skip DB lookup for performance
+        req.user = { _id: decodedToken.id };
         next();
     }
     catch (error) {
@@ -68,11 +62,8 @@ const optionalAuth = async (req, res, next) => {
     try {
         const decodedToken = jwt.verify(token, process.env.JWT_TOKEN);
 
-        if (decodedToken.role === 'partner') {
-            req.user = await foodPartnerModel.findById(decodedToken.id);
-        } else {
-            req.user = await userModel.findById(decodedToken.id);
-        }
+        // Optimized: Avoid DB hit for optional auth; we just need the _id for likes/saves
+        req.user = { _id: decodedToken.id, role: decodedToken.role };
         next();
     }
     catch (error) {

@@ -14,8 +14,9 @@ const useAuth = () => {
             try {
                 const user = JSON.parse(localStorage.getItem('user'));
                 const foodPartner = JSON.parse(localStorage.getItem('foodPartner'));
+                const token = localStorage.getItem('token');
 
-                if (user) {
+                if (user && token) {
                     setAuth({
                         user,
                         foodPartner: null,
@@ -23,7 +24,7 @@ const useAuth = () => {
                         role: 'user',
                         loading: false
                     });
-                } else if (foodPartner) {
+                } else if (foodPartner && token) {
                     setAuth({
                         user: null,
                         foodPartner,
@@ -41,8 +42,17 @@ const useAuth = () => {
                     });
                 }
             } catch (error) {
-                console.error("Error parsing auth from localStorage", error);
-                setAuth(prev => ({ ...prev, loading: false }));
+                console.error("Error parsing auth from localStorage, clearing corrupted data.", error);
+                localStorage.removeItem('user');
+                localStorage.removeItem('foodPartner');
+                localStorage.removeItem('token');
+                setAuth({
+                    user: null,
+                    foodPartner: null,
+                    isAuthenticated: false,
+                    role: null,
+                    loading: false
+                });
             }
         };
 

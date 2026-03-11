@@ -60,4 +60,18 @@ app.use(cookieParser());
 app.use("/api/auth", authRoute);
 app.use("/api/food", foodRoute);
 
-module.exports = app;
+// 404 Not Found Handler
+app.use((req, res, next) => {
+    res.status(404).json({ message: "Route not found" });
+});
+
+// Global Error Handler
+app.use((err, req, res, next) => {
+    console.error(`[Global Error] ${req.method} ${req.originalUrl}:`, err.message);
+    res.status(err.status || 500).json({
+        message: err.message || "Internal Server Error",
+        ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
+    });
+});
+
+module.exports = app;

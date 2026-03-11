@@ -8,6 +8,14 @@ const connectDB = async () => {
     }
 
     try {
+        mongoose.connection.on('disconnected', () => {
+            console.log('MongoDB disconnected');
+        });
+
+        mongoose.connection.on('error', (err) => {
+            console.error('MongoDB connection error event:', err);
+        });
+
         // We use the URI directly. 
         // TIP: Ensure your URI on Render includes the database name (e.g. ...mongodb.net/foodView?...)
         await mongoose.connect(uri);

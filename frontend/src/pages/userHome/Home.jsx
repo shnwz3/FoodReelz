@@ -24,27 +24,29 @@ const Home = () => {
     const [videos, setVideos] = useState([]);
     const [loading, setLoading] = useState(true);
     const [loadingMore, setLoadingMore] = useState(false);
-    const [nextCursor, setNextCursor] = useState(null);
+    const [nextPage, setNextPage] = useState(1);
     const [hasMore, setHasMore] = useState(true);
     const navigate = useNavigate();
     const observerRef = useRef(null);
 
-    const fetchVideos = (cursor = null) => {
-        const isInitial = !cursor;
+    const fetchVideos = (page = 1) => {
+        const isInitial = page === 1;
         if (isInitial) setLoading(true);
         else setLoadingMore(true);
 
         const limit = 6;
-        const url = `/food?limit=${limit}${cursor ? `&cursor=${cursor}` : ''}`;
+        const url = `/food?limit=${limit}&page=${page}`;
         
         cachedGet(url)
             .then(response => {
                 const newVideos = response.data.foodItems || [];
-                const nextC = response.data.nextCursor;
+                const pagination = response.data.pagination;
 
                 setVideos(prev => isInitial ? newVideos : [...prev, ...newVideos]);
-                setNextCursor(nextC);
-                setHasMore(response.data.hasMore || false);
+                if (pagination) {
+                    setNextPage(pagination.page + 1);
+                    setHasMore(pagination.hasMore);
+                }
             })
             .catch(error => {
                 console.error('Error fetching videos:', error);
@@ -66,7 +68,7 @@ const Home = () => {
 
         observerRef.current = new IntersectionObserver(entries => {
             if (entries[0].isIntersecting && hasMore) {
-                fetchVideos(nextCursor);
+                fetchVideos(nextPage);
             }
         }, { threshold: 0.1 });
 

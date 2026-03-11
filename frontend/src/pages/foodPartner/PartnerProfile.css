@@ -749,6 +749,44 @@
     }
 }
 
+/* Upload Progress UI */
+.upload-progress-container {
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    animation: fadeIn 0.4s ease;
+}
+
+.upload-progress-header {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #FF324D;
+    letter-spacing: 0.5px;
+}
+
+.upload-progress-track {
+    width: 100%;
+    height: 10px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 999px;
+    overflow: hidden;
+    position: relative;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+.upload-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #FF324D, #ff6b80);
+    border-radius: 999px;
+    transition: width 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+    box-shadow: 0 0 12px rgba(255, 50, 77, 0.6);
+}
+
 /* Status States */
 .status-container {
     background-color: #000;
