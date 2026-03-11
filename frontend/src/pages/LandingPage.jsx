@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
+import { LogIn, UserPlus, User, ChefHat, ChevronDown } from 'lucide-react';
+import FoodCarousel from '../components/FoodCarousel';
 import './LandingPage.css';
 
 const LandingPage = () => {
@@ -30,39 +32,64 @@ const LandingPage = () => {
   }, []);
 
   return (
-    <div className="home-container">
-      <header className="main-header">
-        <Link to="/" className="logo">
-          <img src="/foodreelz.png" alt="FoodReelz" className="logo-img" />
+    <div className="landing-wrapper">
+      <header className="landing-header">
+        <Link to="/" className="landing-logo">
+          <img src="/foodreelz.png" alt="FoodReelz" className="landing-logo-img" />
         </Link>
-        
-        <nav className="nav-links">
+
+        <nav className="landing-nav">
           <div className="dropdown" ref={loginRef}>
-            <span className="nav-item" onClick={() => toggleDropdown('login')}>
-              Login {openDropdown === 'login' ? '▴' : '▾'}
-            </span>
-            <div className={`dropdown-content ${openDropdown === 'login' ? 'show' : ''}`}>
-              <Link to="/user/login" onClick={() => setOpenDropdown(null)}>User Login</Link>
-              <Link to="/foodpartner/login" onClick={() => setOpenDropdown(null)}>Food Partner Login</Link>
+            <button className="header-btn header-btn--ghost" onClick={() => toggleDropdown('login')}>
+              <LogIn size={16} />
+              <span>Login</span>
+              <ChevronDown size={14} className={`chevron-icon ${openDropdown === 'login' ? 'chevron-open' : ''}`} />
+            </button>
+            <div className={`landing-dropdown-content ${openDropdown === 'login' ? 'show' : ''}`}>
+              <Link to="/user/login" className="dropdown-link" onClick={() => setOpenDropdown(null)}>
+                <div className="dropdown-link-icon"><User size={18} /></div>
+                <div className="dropdown-link-text">
+                  <span className="dropdown-link-title">User Login</span>
+                  <span className="dropdown-link-desc">Browse & discover food reels</span>
+                </div>
+              </Link>
+              <Link to="/foodpartner/login" className="dropdown-link" onClick={() => setOpenDropdown(null)}>
+                <div className="dropdown-link-icon dropdown-link-icon--partner"><ChefHat size={18} /></div>
+                <div className="dropdown-link-text">
+                  <span className="dropdown-link-title">Food Partner Login</span>
+                  <span className="dropdown-link-desc">Manage your restaurant</span>
+                </div>
+              </Link>
             </div>
           </div>
-          
+
           <div className="dropdown" ref={registerRef}>
-            <span className="nav-item" onClick={() => toggleDropdown('register')}>
-              Register {openDropdown === 'register' ? '▴' : '▾'}
-            </span>
-            <div className={`dropdown-content ${openDropdown === 'register' ? 'show' : ''}`}>
-              <Link to="/user/register" onClick={() => setOpenDropdown(null)}>User Register</Link>
-              <Link to="/foodpartner/register" onClick={() => setOpenDropdown(null)}>Food Partner Register</Link>
+            <button className="header-btn header-btn--accent" onClick={() => toggleDropdown('register')}>
+              <UserPlus size={16} />
+              <span>Register</span>
+              <ChevronDown size={14} className={`chevron-icon ${openDropdown === 'register' ? 'chevron-open' : ''}`} />
+            </button>
+            <div className={`landing-dropdown-content ${openDropdown === 'register' ? 'show' : ''}`}>
+              <Link to="/user/register" className="dropdown-link" onClick={() => setOpenDropdown(null)}>
+                <div className="dropdown-link-icon"><User size={18} /></div>
+                <div className="dropdown-link-text">
+                  <span className="dropdown-link-title">User Register</span>
+                  <span className="dropdown-link-desc">Create your food journey</span>
+                </div>
+              </Link>
+              <Link to="/foodpartner/register" className="dropdown-link" onClick={() => setOpenDropdown(null)}>
+                <div className="dropdown-link-icon dropdown-link-icon--partner"><ChefHat size={18} /></div>
+                <div className="dropdown-link-text">
+                  <span className="dropdown-link-title">Food Partner Register</span>
+                  <span className="dropdown-link-desc">List your restaurant</span>
+                </div>
+              </Link>
             </div>
           </div>
         </nav>
       </header>
-      
-      <main className="hero-section">
-        <h1 className="hero-title">Find the best food, cafes, and crusines</h1>
-        <p className="hero-subtitle">Explore top-rated restaurants around you</p>
-      </main>
+
+      <FoodCarousel />
     </div>
   );
 };
